@@ -38,6 +38,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         
+        // Set action bar logo
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+        supportActionBar?.setLogo(R.drawable.logo_actionbar)
+        supportActionBar?.setDisplayUseLogoEnabled(true)
+        
         // Initialize preferences
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
         
@@ -253,11 +258,13 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val response = apiClient.startDetection()
-                
-                if (response.isSuccessful) {
-                    Toast.makeText(this@MainActivity, "Detection started", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this@MainActivity, "Failed to start detection", Toast.LENGTH_SHORT).show()
+                response.use {
+                    if (it.isSuccessful) {
+                        Toast.makeText(this@MainActivity, "Detection started", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val errorBody = it.body?.string() ?: "Unknown error"
+                        Toast.makeText(this@MainActivity, "Failed: Code ${it.code} - $errorBody", Toast.LENGTH_LONG).show()
+                    }
                 }
             } catch (e: Exception) {
                 handleError(e)
@@ -269,11 +276,13 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val response = apiClient.stopDetection()
-                
-                if (response.isSuccessful) {
-                    Toast.makeText(this@MainActivity, "Detection stopped", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(this@MainActivity, "Failed to stop detection", Toast.LENGTH_SHORT).show()
+                response.use {
+                    if (it.isSuccessful) {
+                        Toast.makeText(this@MainActivity, "Detection stopped", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val errorBody = it.body?.string() ?: "Unknown error"
+                        Toast.makeText(this@MainActivity, "Failed: Code ${it.code} - $errorBody", Toast.LENGTH_LONG).show()
+                    }
                 }
             } catch (e: Exception) {
                 handleError(e)
@@ -283,7 +292,13 @@ class MainActivity : AppCompatActivity() {
     
     private fun handleError(e: Exception) {
         runOnUiThread {
-            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            val errorMsg = when {
+                e.message?.contains("Failed to connect") == true -> "Cannot connect to robot. Check IP/port and ensure API server is running."
+                e.message?.contains("timeout") == true -> "Connection timeout. Robot may be unreachable."
+                e.message.isNullOrBlank() -> "Network error. Please check connection and try again."
+                else -> "Error: ${e.message}"
+            }
+            Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
             updateConnectionStatus(false)
         }
     }
