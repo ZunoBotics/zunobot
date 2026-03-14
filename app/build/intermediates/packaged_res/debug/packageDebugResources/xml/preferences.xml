@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Connection Settings Category -->
+    <PreferenceCategory
+        android:title="Raspberry Pi Connection"
+        android:key="connection_category">
+
+        <EditTextPreference
+            android:key="raspberry_pi_ip"
+            android:title="Raspberry Pi IP Address"
+            android:summary="Enter IP address (e.g., 192.168.1.100)"
+            android:defaultValue="192.168.1.100"
+            android:inputType="text" />
+
+        <EditTextPreference
+            android:key="raspberry_pi_port"
+            android:title="Port"
+            android:summary="API server port"
+            android:defaultValue="5000"
+            android:inputType="number" />
+
+        <SwitchPreferenceCompat
+            android:key="auto_connect"
+            android:title="Auto-connect on start"
+            android:summary="Automatically connect when app opens"
+            android:defaultValue="false" />
+
+        <Preference
+            android:key="test_connection"
+            android:title="Test Connection"
+            android:summary="Verify connection to Raspberry Pi" />
+
+    </PreferenceCategory>
+
+    <!-- Movement Settings Category -->
+    <PreferenceCategory
+        android:title="Movement Settings"
+        android:key="movement_category">
+
+        <EditTextPreference
+            android:key="move_duration"
+            android:title="Movement Duration"
+            android:summary="Duration for movement commands (seconds)"
+            android:defaultValue="1.0"
+            android:inputType="numberDecimal" />
+
+    </PreferenceCategory>
+
+    <!-- Audio Settings Category -->
+    <PreferenceCategory
+        android:title="Audio Settings"
+        android:key="audio_category">
+
+        <ListPreference
+            android:key="greeting_language"
+            android:title="Greeting Language"
+            android:summary="Default language for greetings"
+            android:defaultValue="auto"
+            android:entries="@array/greeting_languages"
+            android:entryValues="@array/greeting_language_values" />
+
+    </PreferenceCategory>
+
+    <!-- About Category -->
+    <PreferenceCategory
+        android:title="About"
+        android:key="about_category">
+
+        <Preference
+            android:key="app_version"
+            android:title="Version"
+            android:summary="1.0"
+            android:selectable="false" />
+
+        <Preference
+            android:key="app_info"
+            android:title="Zunobot Remote Control"
+            android:summary="Control your LeKiwi robot remotely"
+            android:selectable="false" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

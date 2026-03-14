@@ -1,0 +1,17 @@
+[Unit]
+Description=Zunobot API Server
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/lerobot/zunobot-app/raspberry-pi
+Environment="PATH=/home/pi/miniconda3/envs/lerobot/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/pi/miniconda3/envs/lerobot/bin/python robot_api_server.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
