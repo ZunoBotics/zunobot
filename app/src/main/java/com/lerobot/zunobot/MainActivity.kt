@@ -149,11 +149,11 @@ class MainActivity : AppCompatActivity() {
     private fun updateConnectionStatus(connected: Boolean) {
         if (connected) {
             statusText.text = "Connected"
-            statusText.setTextColor(getColor(android.R.color.holo_green_dark))
+            statusText.setTextColor(getColor(R.color.connected_green))
             setButtonsEnabled(true)
         } else {
             statusText.text = "Not Connected"
-            statusText.setTextColor(getColor(android.R.color.holo_red_dark))
+            statusText.setTextColor(getColor(R.color.disconnected_red))
             setButtonsEnabled(false)
         }
     }
