@@ -5,9 +5,13 @@ Wraps LeRobot commands for API server
 
 import sys
 import time
-sys.path.insert(0, '/home/pi/lerobot/src')
+from pathlib import Path
 
-from lerobot.robots.lekiwi import LeKiwi
+# Add lerobot src to path dynamically
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'src'))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent / 'lerobot' / 'examples' / 'lekiwi'))
+
+from lerobot.robots.lekiwi import LeKiwi, LeKiwiConfig
 
 class RobotController:
     """Wrapper for robot control commands"""
@@ -23,9 +27,15 @@ class RobotController:
     
     def __init__(self):
         """Initialize robot connection"""
-        self.robot = LeKiwi()
+        config = LeKiwiConfig(
+            id="default",
+            port="/dev/ttyACM1",
+            use_degrees=False,
+            cameras={}
+        )
+        self.robot = LeKiwi(config)
         self.robot.connect()
-        
+
         # Neutral pose
         self.neutral_arm = {
             "arm_shoulder_pan.pos": 0.586,
@@ -34,9 +44,14 @@ class RobotController:
             "arm_wrist_flex.pos": -11.621,
             "arm_head_pan.pos": self.HEAD_CENTER,
         }
-        
+
         # Set neutral position
-        self.robot.move_to_neutral()
+        self.robot.send_action({
+            **self.neutral_arm,
+            "x.vel": 0.0,
+            "y.vel": 0.0,
+            "theta.vel": 0.0,
+        })
         time.sleep(0.5)
     
     def move(self, direction: str, duration: float = 1.0):
@@ -62,10 +77,10 @@ class RobotController:
         
         # Send movement command
         self.robot.send_action({
-            "base.x": x,
-            "base.y": y,
-            "base.theta": 0.0,
-            **self.neutral_arm
+            **self.neutral_arm,
+            "x.vel": x,
+            "y.vel": y,
+            "theta.vel": 0.0,
         })
         
         # Sleep for duration
@@ -96,18 +111,35 @@ class RobotController:
         
         # Send rotation command
         self.robot.send_action({
-            "base.x": 0.0,
-            "base.y": 0.0,
-            "base.theta": theta,
-            **self.neutral_arm
+            **self.neutral_arm,
+            "x.vel": 0.0,
+            "y.vel": 0.0,
+            "theta.vel": theta,
         })
         
         # Sleep for duration
         time.sleep(duration)
-        
-        # Stop
         self.stop()
-    
+
+    def rotate(self, rotations: int = 1):
+        """
+        Rotate robot in-place for a number of full rotations
+
+        Args:
+            rotations: number of 360-degree rotations
+        """
+        duration = (360.0 / self.ANGULAR_SPEED) * rotations
+
+        self.robot.send_action({
+            **self.neutral_arm,
+            "x.vel": 0.0,
+            "y.vel": 0.0,
+            "theta.vel": self.ANGULAR_SPEED,
+        })
+
+        time.sleep(duration)
+        self.stop()
+
     def move_head(self, position: str):
         """
         Move head to position
@@ -129,10 +161,10 @@ class RobotController:
         arm_with_head["arm_head_pan.pos"] = head_pos
         
         self.robot.send_action({
-            "base.x": 0.0,
-            "base.y": 0.0,
-            "base.theta": 0.0,
-            **arm_with_head
+            **arm_with_head,
+            "x.vel": 0.0,
+            "y.vel": 0.0,
+            "theta.vel": 0.0,
         })
         
         time.sleep(1.0)
@@ -190,10 +222,10 @@ class RobotController:
     def stop(self):
         """Emergency stop"""
         self.robot.send_action({
-            "base.x": 0.0,
-            "base.y": 0.0,
-            "base.theta": 0.0,
-            **self.neutral_arm
+            **self.neutral_arm,
+            "x.vel": 0.0,
+            "y.vel": 0.0,
+            "theta.vel": 0.0,
         })
     
     def disconnect(self):
